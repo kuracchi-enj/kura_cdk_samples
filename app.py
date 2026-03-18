@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+import os
+from pathlib import Path
+
+import aws_cdk as cdk
+from dotenv import load_dotenv
+
+from cdk_ec2_stack import CdkEc2Stack
+
+
+load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
+
+app = cdk.App()
+
+CdkEc2Stack(
+    app,
+    "CdkEc2Stack",
+    env=cdk.Environment(
+        account=os.getenv("CDK_DEFAULT_ACCOUNT"),
+        region=os.getenv("CDK_DEFAULT_REGION"),
+    ),
+)
+
+app.synth()
