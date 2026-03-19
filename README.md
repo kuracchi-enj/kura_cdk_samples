@@ -1,6 +1,219 @@
-# cdk_ec2
+# kura_cdk_samples
 
-AWS CDK Python を使って、EC2 インスタンスを 1 台だけ作るための最小構成です。
+AWS CDK (Python) を使って各種 AWS リソースをデプロイするためのサンプル集です。
+
+スタックは用途ごとに分割されており、必要なスタックだけを個別にデプロイできます。
+現在は EC2・Lambda・RDS を提供しており、今後も順次追加予定です。
+
+## 提供スタック一覧
+
+| スタック | ファイル | 作成されるリソース |
+|---------|---------|-----------------|
+| EC2 | `cdk_ec2_stack.py` | EC2 インスタンス (t3.micro / AL2023 / SSM) |
+| Lambda | `cdk_lambda_stack.py` | Lambda 関数 + Function URL |
+| RDS | `cdk_rds_stack.py` | RDS PostgreSQL 17 (db.t3.micro) + Secrets Manager |
+
+## 設計方針
+
+- スタックは用途ごとに独立したファイルに分割する
+- 新しい VPC は作らず、既存の default VPC を再利用する
+- 認証情報は Secrets Manager で管理し、コードにハードコードしない
+- 環境固有の値は `.env` で管理し、Git にコミットしない
+
+## ファイル構成
+
+```
+.
+├── app.py                    # CDK アプリのエントリーポイント
+├── cdk.json                  # CDK CLI 設定
+├── cdk_ec2_stack.py          # EC2 スタック
+├── cdk_lambda_stack.py       # Lambda スタック
+├── cdk_rds_stack.py          # RDS スタック
+├── lambda/
+│   └── handler.py            # Lambda ハンドラー
+├── requirements.txt          # Python 依存ライブラリ
+├── .env.example              # 環境変数の雛形
+├── .github/
+│   └── skills/               # Copilot CLI スキル定義
+│       ├── aws-cdk-general/
+│       ├── aws-cdk-ec2/
+│       ├── aws-cdk-lambda/
+│       └── aws-cdk-rds/
+└── .gitignore
+```
+
+## 前提条件
+
+- Python 3 がインストールされている
+- AWS CDK CLI がインストールされている (`npm install -g aws-cdk`)
+- AWS CLI で認証済みである
+- デプロイ先アカウント・リージョンに default VPC が存在する
+
+確認コマンド:
+
+```bash
+python3 --version
+cdk --version
+aws sts get-caller-identity
+```
+
+## セットアップ
+
+### 1. `.env` を作成する
+
+```bash
+cp .env.example .env
+```
+
+`.env` の値:
+
+| 変数 | 説明 |
+|-----|------|
+| `AWS_PROFILE` | 使用する AWS CLI プロファイル名 |
+| `CDK_DEFAULT_ACCOUNT` | デプロイ先の AWS アカウント ID |
+| `CDK_DEFAULT_REGION` | デプロイ先リージョン (例: `ap-northeast-1`) |
+
+### 2. Python 仮想環境を作成してライブラリをインストールする
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+## デプロイ
+
+### 特定のスタックだけデプロイする
+
+```bash
+cdk deploy <StackName>
+```
+
+| コマンド | 対象 |
+|---------|------|
+| `cdk deploy CdkEc2Stack` | EC2 インスタンス |
+| `cdk deploy CdkLambdaStack` | Lambda + Function URL |
+| `cdk deploy CdkRdsStack` | RDS PostgreSQL |
+
+### すべてのスタックをデプロイする
+
+```bash
+cdk deploy --all
+```
+
+### 初回のみ bootstrap が必要な場合
+
+```bash
+cdk bootstrap
+```
+
+## デプロイ前の確認
+
+いきなり `cdk deploy` せず、次の順で確認するのが安全です。
+
+```bash
+# CloudFormation テンプレート生成の確認
+cdk synth <StackName>
+
+# AWS との差分確認
+cdk diff <StackName>
+```
+
+## 各スタックの詳細
+
+### EC2 スタック (`CdkEc2Stack`)
+
+- インスタンスタイプ: `t3.micro`
+- OS: Amazon Linux 2023
+- VPC: default VPC を再利用
+- 接続方法: SSM Session Manager (SSH キー不要)
+
+### Lambda スタック (`CdkLambdaStack`)
+
+- ランタイム: Python 3.13
+- エンドポイント: Lambda Function URL (API Gateway 不要)
+- 認証: なし (`NONE`) — 必要に応じて `AWS_IAM` に変更
+- タイムアウト: 30 秒
+- デプロイ後の Output: `FunctionUrl`
+
+動作確認:
+
+```bash
+curl <FunctionUrl>
+# => {"message": "Hello from Lambda!"}
+```
+
+### RDS スタック (`CdkRdsStack`)
+
+- エンジン: PostgreSQL 17
+- インスタンスタイプ: `db.t3.micro`
+- VPC: default VPC のパブリックサブネット
+- 認証情報: Secrets Manager 自動生成
+- データベース名: `appdb`
+- ストレージ: 20GB (gp2)
+
+デプロイ後の Output:
+
+| Output | 内容 |
+|--------|------|
+| `DbEndpoint` | 接続エンドポイント |
+| `DbPort` | ポート番号 (5432) |
+| `DbSecretArn` | Secrets Manager の ARN |
+
+パスワードの取得:
+
+```bash
+aws secretsmanager get-secret-value \
+  --secret-id <DbSecretArn> \
+  --query SecretString \
+  --output text
+```
+
+## 削除
+
+```bash
+cdk destroy <StackName>
+# または全スタック
+cdk destroy --all
+```
+
+> **注意**: RDS スタックは `RemovalPolicy.DESTROY` のためスタック削除時に DB も削除されます。本番環境では `RETAIN` に変更してください。
+
+## 秘匿情報の扱い
+
+- `.env` には `AWS_PROFILE` / `CDK_DEFAULT_ACCOUNT` / `CDK_DEFAULT_REGION` を記載する
+- `.env` は Git にコミットしない (`.gitignore` で除外済み)
+- 共有用テンプレートは `.env.example` を使う
+- 新しい環境変数を追加したら `.env.example` にもキーだけ追加する
+
+## スタックの追加方法
+
+新しい AWS リソースを追加する場合の手順:
+
+1. `cdk_<service>_stack.py` を作成し、スタッククラスを定義する
+2. `app.py` に import とインスタンス化を追加する
+3. 必要であれば `lambda/` などリソースのコードを追加する
+4. `cdk synth <StackName>` で動作確認する
+5. `.github/skills/` に対応するスキル (`SKILL.md`) を追加する
+
+## よくある詰まりどころ
+
+### default VPC が見つからない
+
+- 指定リージョンに default VPC が存在するか確認する
+- `.env` の `CDK_DEFAULT_REGION` が正しいか確認する
+
+### `aws_cdk` が import できない
+
+```bash
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### `cdk` コマンドはあるが Python 側で失敗する
+
+CDK CLI と Python ライブラリは別管理です。両方のインストールを確認してください。
+
 
 このプロジェクトでは次の方針を取っています。
 
