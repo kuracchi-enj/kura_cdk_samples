@@ -5,6 +5,7 @@ from pathlib import Path
 import aws_cdk as cdk
 from dotenv import load_dotenv
 
+from cdk_api_lambda_stack import CdkApiLambdaStack
 from cdk_ec2_stack import CdkEc2Stack
 from cdk_lambda_stack import CdkLambdaStack
 from cdk_rds_stack import CdkRdsStack
@@ -41,4 +42,14 @@ CdkRdsStack(
     ),
 )
 
+api_lambda_stack = CdkApiLambdaStack(
+    app,
+    "CdkApiLambdaStack",
+    env=cdk.Environment(
+        account=os.getenv("CDK_DEFAULT_ACCOUNT"),
+        region=os.getenv("CDK_DEFAULT_REGION"),
+    ),
+)
+
 app.synth()
+
