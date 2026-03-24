@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 
 from cdk_api_lambda_stack import CdkApiLambdaStack
 from cdk_ec2_stack import CdkEc2Stack
+from cdk_elastic_beanstalk_stack import CdkElasticBeanstalkStack
 from cdk_lambda_stack import CdkLambdaStack
 from cdk_rds_stack import CdkRdsStack
 
@@ -42,9 +43,18 @@ CdkRdsStack(
     ),
 )
 
-api_lambda_stack = CdkApiLambdaStack(
+CdkApiLambdaStack(
     app,
     "CdkApiLambdaStack",
+    env=cdk.Environment(
+        account=os.getenv("CDK_DEFAULT_ACCOUNT"),
+        region=os.getenv("CDK_DEFAULT_REGION"),
+    ),
+)
+
+CdkElasticBeanstalkStack(
+    app,
+    "CdkElasticBeanstalkStack",
     env=cdk.Environment(
         account=os.getenv("CDK_DEFAULT_ACCOUNT"),
         region=os.getenv("CDK_DEFAULT_REGION"),
