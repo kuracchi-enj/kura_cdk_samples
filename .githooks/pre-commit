@@ -1,0 +1,4 @@
+#!/bin/sh
+# Pre-commit hook: update README.md when cdk_*_stack.py files are staged.
+# Install: git config core.hooksPath .githooks
+python3 scripts/update_readme.py
