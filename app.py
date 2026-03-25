@@ -5,12 +5,12 @@ from pathlib import Path
 import aws_cdk as cdk
 from dotenv import load_dotenv
 
-from cdk_api_lambda_stack import CdkApiLambdaStack
-from cdk_durable_lambda_stack import CdkDurableLambdaStack
-from cdk_ec2_stack import CdkEc2Stack
-from cdk_elastic_beanstalk_stack import CdkElasticBeanstalkStack
-from cdk_lambda_stack import CdkLambdaStack
-from cdk_rds_stack import CdkRdsStack
+from stacks.cdk_api_lambda_stack import CdkApiLambdaStack
+from stacks.cdk_durable_lambda_stack import CdkDurableLambdaStack
+from stacks.cdk_ec2_stack import CdkEc2Stack
+from stacks.cdk_elastic_beanstalk_stack import CdkElasticBeanstalkStack
+from stacks.cdk_lambda_stack import CdkLambdaStack
+from stacks.cdk_rds_stack import CdkRdsStack
 
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
