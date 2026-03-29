@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ダッシュボード - ワイヤーフレーム</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Helvetica Neue', sans-serif; background: #f0f0f0; color: #333; display: flex; min-height: 100vh; }
+
+  /* サイドバー */
+  .sidebar {
+    width: 220px;
+    background: #333;
+    color: #fff;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar-logo {
+    padding: 20px 24px;
+    border-bottom: 1px solid #555;
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+  }
+  .sidebar-user {
+    padding: 16px 24px;
+    border-bottom: 1px solid #555;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .user-avatar { width: 36px; height: 36px; background: #666; border: 2px solid #999; border-radius: 50%; flex-shrink: 0; }
+  .user-info { font-size: 12px; }
+  .user-info .name { font-weight: bold; margin-bottom: 2px; }
+  .user-info .role { color: #aaa; }
+
+  .sidebar-nav { flex: 1; padding: 16px 0; }
+  .nav-section { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px; padding: 8px 24px 4px; }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 24px;
+    font-size: 13px;
+    color: #ccc;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  .nav-item.active { background: #444; color: #fff; border-left-color: #fff; }
+  .nav-item:hover { background: #3a3a3a; }
+  .nav-icon { width: 18px; height: 18px; background: #555; border: 1px solid #777; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
+  .nav-badge { margin-left: auto; background: #666; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 10px; }
+
+  .sidebar-footer { padding: 16px 24px; border-top: 1px solid #555; font-size: 12px; color: #aaa; cursor: pointer; }
+
+  /* メインコンテンツ */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* トップバー */
+  .topbar {
+    background: #fff;
+    border-bottom: 2px solid #ddd;
+    padding: 0 32px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .page-title { font-size: 18px; font-weight: bold; }
+  .topbar-right { display: flex; align-items: center; gap: 16px; }
+  .search-box {
+    border: 1px solid #ccc;
+    padding: 7px 14px;
+    font-size: 13px;
+    width: 200px;
+    color: #999;
+  }
+  .notif-btn { width: 34px; height: 34px; background: #f0f0f0; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; position: relative; }
+  .notif-dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: #e74c3c; border-radius: 50%; }
+
+  /* コンテンツエリア */
+  .content { flex: 1; padding: 28px 32px; overflow-y: auto; }
+
+  /* 日付フィルター */
+  .date-filter { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .date-filter h2 { font-size: 15px; color: #666; }
+  .filter-tabs { display: flex; border: 2px solid #333; }
+  .filter-tab { padding: 6px 16px; font-size: 12px; cursor: pointer; border-right: 1px solid #333; }
+  .filter-tab:last-child { border-right: none; }
+  .filter-tab.active { background: #333; color: #fff; }
+
+  /* KPI カード */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .kpi-card {
+    background: #fff;
+    border: 2px solid #ddd;
+    padding: 20px 22px;
+  }
+  .kpi-card.highlight { border-color: #333; border-width: 2px; }
+  .kpi-label { font-size: 12px; color: #888; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .kpi-value { font-size: 28px; font-weight: bold; margin-bottom: 6px; }
+  .kpi-delta { font-size: 12px; }
+  .kpi-delta.up { color: #27ae60; }
+  .kpi-delta.down { color: #e74c3c; }
+  .kpi-icon { float: right; font-size: 22px; margin-top: -30px; color: #ccc; }
+
+  /* グラフエリア */
+  .chart-row { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 28px; }
+  .chart-card {
+    background: #fff;
+    border: 2px solid #ddd;
+    padding: 20px;
+  }
+  .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .chart-title { font-size: 14px; font-weight: bold; }
+  .chart-legend { display: flex; gap: 12px; font-size: 11px; color: #888; }
+  .legend-dot { width: 10px; height: 10px; display: inline-block; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+
+  /* 折れ線グラフ（SVG モック） */
+  .chart-placeholder {
+    height: 160px;
+    background: #f9f9f9;
+    border: 1px dashed #ccc;
+    display: flex;
+    align-items: flex-end;
+    padding: 12px 8px 8px;
+    gap: 4px;
+  }
+  .bar { background: #333; flex: 1; opacity: 0.15; }
+  .bar.filled { opacity: 0.7; }
+  .bar.highlight { opacity: 1; background: #555; }
+
+  /* 円グラフプレースホルダー */
+  .donut-placeholder {
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .donut {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: conic-gradient(#333 0% 45%, #777 45% 72%, #aaa 72% 88%, #ddd 88% 100%);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .donut-inner { width: 60px; height: 60px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; text-align: center; }
+  .donut-legend { margin-top: 12px; font-size: 11px; }
+  .donut-legend-item { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .legend-block { width: 12px; height: 12px; flex-shrink: 0; }
+
+  /* テーブル */
+  .table-card { background: #fff; border: 2px solid #ddd; }
+  .table-header { padding: 16px 20px; border-bottom: 2px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+  .table-title { font-size: 14px; font-weight: bold; }
+  .table-action { font-size: 12px; color: #666; border: 1px solid #ccc; padding: 5px 12px; cursor: pointer; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th { background: #f8f8f8; padding: 10px 16px; text-align: left; font-size: 11px; text-transform: uppercase; color: #888; border-bottom: 1px solid #eee; letter-spacing: 0.5px; }
+  tbody td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; }
+  tbody tr:last-child td { border-bottom: none; }
+  .status-badge { display: inline-block; padding: 3px 10px; font-size: 11px; font-weight: bold; }
+  .status-active { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+  .status-pending { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+  .status-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+  .user-cell { display: flex; align-items: center; gap: 8px; }
+  .user-thumb { width: 28px; height: 28px; background: #ddd; border: 1px solid #ccc; border-radius: 50%; flex-shrink: 0; }
+
+  /* ワイヤーフレームラベル */
+  .wf-label {
+    position: fixed;
+    top: 8px; right: 8px;
+    background: #f0ad4e;
+    color: #333;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: bold;
+    border: 1px solid #d08030;
+    z-index: 1000;
+  }
+</style>
+</head>
+<body>
+
+<div class="wf-label">WIREFRAME / 画面3: ダッシュボード</div>
+
+<!-- サイドバー -->
+<div class="sidebar">
+  <div class="sidebar-logo">MyRailsApp</div>
+
+  <div class="sidebar-user">
+    <div class="user-avatar"></div>
+    <div class="user-info">
+      <div class="name">山田 太郎</div>
+      <div class="role">管理者</div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section">メインメニュー</div>
+    <div class="nav-item active">
+      <div class="nav-icon">📊</div>ダッシュボード
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">👥</div>ユーザー管理
+      <span class="nav-badge">12</span>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">📦</div>注文管理
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">💰</div>売上レポート
+    </div>
+
+    <div class="nav-section">システム</div>
+    <div class="nav-item">
+      <div class="nav-icon">⚙️</div>設定
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">📋</div>ログ
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">🔔</div>通知
+      <span class="nav-badge">3</span>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">← ログアウト</div>
+</div>
+
+<!-- メインコンテンツ -->
+<div class="main">
+  <!-- トップバー -->
+  <div class="topbar">
+    <div class="page-title">ダッシュボード</div>
+    <div class="topbar-right">
+      <input class="search-box" type="text" placeholder="🔍  検索...">
+      <div class="notif-btn">🔔<span class="notif-dot"></span></div>
+    </div>
+  </div>
+
+  <!-- コンテンツ -->
+  <div class="content">
+
+    <!-- 日付フィルター -->
+    <div class="date-filter">
+      <h2>集計期間: 2025年3月</h2>
+      <div class="filter-tabs">
+        <div class="filter-tab">今日</div>
+        <div class="filter-tab">今週</div>
+        <div class="filter-tab active">今月</div>
+        <div class="filter-tab">今年</div>
+        <div class="filter-tab">カスタム</div>
+      </div>
+    </div>
+
+    <!-- KPI カード -->
+    <div class="kpi-grid">
+      <div class="kpi-card highlight">
+        <div class="kpi-label">総ユーザー数</div>
+        <div class="kpi-value">2,847</div>
+        <div class="kpi-delta up">▲ 12.4% 先月比</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">月間注文数</div>
+        <div class="kpi-value">1,204</div>
+        <div class="kpi-delta up">▲ 8.2% 先月比</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">月間売上</div>
+        <div class="kpi-value">¥4.8M</div>
+        <div class="kpi-delta down">▼ 2.1% 先月比</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">エラー率</div>
+        <div class="kpi-value">0.3%</div>
+        <div class="kpi-delta up">▲ 改善中</div>
+      </div>
+    </div>
+
+    <!-- グラフエリア -->
+    <div class="chart-row">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">売上推移（過去12ヶ月）</div>
+          <div class="chart-legend">
+            <span><span class="legend-dot" style="background:#333"></span>売上</span>
+            <span><span class="legend-dot" style="background:#aaa"></span>注文数</span>
+          </div>
+        </div>
+        <div class="chart-placeholder">
+          <div class="bar" style="height:40%"></div>
+          <div class="bar filled" style="height:55%"></div>
+          <div class="bar filled" style="height:48%"></div>
+          <div class="bar" style="height:62%"></div>
+          <div class="bar filled" style="height:70%"></div>
+          <div class="bar filled" style="height:58%"></div>
+          <div class="bar" style="height:45%"></div>
+          <div class="bar filled" style="height:75%"></div>
+          <div class="bar filled" style="height:80%"></div>
+          <div class="bar highlight" style="height:90%"></div>
+          <div class="bar highlight" style="height:85%"></div>
+          <div class="bar highlight" style="height:95%"></div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">ユーザー属性</div>
+        </div>
+        <div class="donut-placeholder">
+          <div style="text-align:center">
+            <div class="donut"><div class="donut-inner">2,847<br>人</div></div>
+            <div class="donut-legend" style="margin-top:12px">
+              <div class="donut-legend-item"><div class="legend-block" style="background:#333"></div>アクティブ (45%)</div>
+              <div class="donut-legend-item"><div class="legend-block" style="background:#777"></div>新規 (27%)</div>
+              <div class="donut-legend-item"><div class="legend-block" style="background:#aaa"></div>休眠 (16%)</div>
+              <div class="donut-legend-item"><div class="legend-block" style="background:#ddd; border:1px solid #ccc"></div>離脱 (12%)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 最近のアクティビティテーブル -->
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">最近の注文</div>
+        <div class="table-action">すべて表示 →</div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>注文ID</th>
+            <th>ユーザー</th>
+            <th>注文日時</th>
+            <th>金額</th>
+            <th>ステータス</th>
+            <th>アクション</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>#ORD-20250329</td>
+            <td><div class="user-cell"><div class="user-thumb"></div>田中 花子</div></td>
+            <td>2025/03/29 15:42</td>
+            <td>¥12,800</td>
+            <td><span class="status-badge status-active">完了</span></td>
+            <td><a href="#" style="font-size:12px; color:#333;">詳細</a></td>
+          </tr>
+          <tr>
+            <td>#ORD-20250329</td>
+            <td><div class="user-cell"><div class="user-thumb"></div>鈴木 一郎</div></td>
+            <td>2025/03/29 14:18</td>
+            <td>¥5,400</td>
+            <td><span class="status-badge status-pending">処理中</span></td>
+            <td><a href="#" style="font-size:12px; color:#333;">詳細</a></td>
+          </tr>
+          <tr>
+            <td>#ORD-20250328</td>
+            <td><div class="user-cell"><div class="user-thumb"></div>佐藤 美咲</div></td>
+            <td>2025/03/28 22:05</td>
+            <td>¥32,000</td>
+            <td><span class="status-badge status-active">完了</span></td>
+            <td><a href="#" style="font-size:12px; color:#333;">詳細</a></td>
+          </tr>
+          <tr>
+            <td>#ORD-20250328</td>
+            <td><div class="user-cell"><div class="user-thumb"></div>高橋 大輔</div></td>
+            <td>2025/03/28 17:33</td>
+            <td>¥8,200</td>
+            <td><span class="status-badge status-error">エラー</span></td>
+            <td><a href="#" style="font-size:12px; color:#333;">詳細</a></td>
+          </tr>
+          <tr>
+            <td>#ORD-20250328</td>
+            <td><div class="user-cell"><div class="user-thumb"></div>伊藤 由美</div></td>
+            <td>2025/03/28 11:09</td>
+            <td>¥15,600</td>
+            <td><span class="status-badge status-pending">処理中</span></td>
+            <td><a href="#" style="font-size:12px; color:#333;">詳細</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- /.content -->
+</div><!-- /.main -->
+
+</body>
+</html>

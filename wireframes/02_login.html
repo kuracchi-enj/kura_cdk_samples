@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ログインページ - ワイヤーフレーム</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Helvetica Neue', sans-serif;
+    background: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: #333;
+  }
+
+  .login-wrapper {
+    display: flex;
+    width: 900px;
+    min-height: 520px;
+    background: #fff;
+    border: 2px solid #333;
+    box-shadow: 4px 4px 0 #999;
+  }
+
+  /* 左側: ブランドパネル */
+  .brand-panel {
+    flex: 1;
+    background: #333;
+    color: #fff;
+    padding: 48px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .brand-logo { font-size: 22px; font-weight: bold; border: 2px solid #fff; padding: 6px 14px; display: inline-block; margin-bottom: 40px; }
+  .brand-panel h2 { font-size: 26px; margin-bottom: 16px; line-height: 1.4; }
+  .brand-panel p { font-size: 14px; color: #ccc; line-height: 1.7; }
+  .brand-features { margin-top: 32px; }
+  .brand-features li { font-size: 13px; color: #ccc; margin-bottom: 10px; padding-left: 20px; position: relative; list-style: none; }
+  .brand-features li::before { content: "✓"; position: absolute; left: 0; color: #aaa; }
+
+  /* 右側: フォームパネル */
+  .form-panel {
+    flex: 1;
+    padding: 48px 44px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .form-panel h1 { font-size: 24px; font-weight: bold; margin-bottom: 8px; }
+  .form-panel .subtitle { font-size: 14px; color: #666; margin-bottom: 32px; }
+
+  .form-group { margin-bottom: 20px; }
+  .form-group label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; color: #444; }
+  .form-group input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 2px solid #ccc;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus { border-color: #333; }
+  .form-group input::placeholder { color: #bbb; }
+
+  .form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    font-size: 13px;
+  }
+  .remember { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .remember input[type="checkbox"] { width: 14px; height: 14px; cursor: pointer; }
+  .forgot-link { color: #555; text-decoration: underline; cursor: pointer; }
+
+  .btn-login {
+    width: 100%;
+    background: #333;
+    color: #fff;
+    padding: 13px;
+    font-size: 15px;
+    font-weight: bold;
+    border: 2px solid #333;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+  }
+  .btn-login:hover { background: #555; }
+
+  .divider {
+    text-align: center;
+    margin: 20px 0;
+    font-size: 12px;
+    color: #bbb;
+    position: relative;
+  }
+  .divider::before, .divider::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 42%;
+    height: 1px;
+    background: #ddd;
+  }
+  .divider::before { left: 0; }
+  .divider::after { right: 0; }
+
+  .btn-sso {
+    width: 100%;
+    background: #fff;
+    color: #333;
+    padding: 11px;
+    font-size: 14px;
+    border: 2px solid #ccc;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .sso-icon { width: 18px; height: 18px; background: #e0e0e0; border: 1px solid #bbb; display: inline-block; border-radius: 2px; }
+
+  .signup-link {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 13px;
+    color: #666;
+  }
+  .signup-link a { color: #333; font-weight: bold; text-decoration: underline; cursor: pointer; }
+
+  /* ワイヤーフレームラベル */
+  .wf-label {
+    position: fixed;
+    top: 8px; right: 8px;
+    background: #f0ad4e;
+    color: #333;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: bold;
+    border: 1px solid #d08030;
+    z-index: 1000;
+  }
+</style>
+</head>
+<body>
+
+<div class="wf-label">WIREFRAME / 画面2: ログインページ</div>
+
+<div class="login-wrapper">
+  <!-- 左側: ブランドパネル -->
+  <div class="brand-panel">
+    <div class="brand-logo">MyRailsApp</div>
+    <h2>クラウドの力で<br>ビジネスを加速する</h2>
+    <p>AWS Elastic Beanstalk 上で動く<br>Ruby on Rails アプリケーション基盤</p>
+    <ul class="brand-features">
+      <li>高可用性・自動スケーリング対応</li>
+      <li>PostgreSQL によるデータ永続化</li>
+      <li>SSL/TLS 暗号化通信</li>
+      <li>CloudWatch によるモニタリング</li>
+    </ul>
+  </div>
+
+  <!-- 右側: ログインフォーム -->
+  <div class="form-panel">
+    <h1>ログイン</h1>
+    <div class="subtitle">アカウントにサインインしてください</div>
+
+    <div class="form-group">
+      <label>メールアドレス</label>
+      <input type="email" placeholder="example@company.com">
+    </div>
+
+    <div class="form-group">
+      <label>パスワード</label>
+      <input type="password" placeholder="パスワードを入力">
+    </div>
+
+    <div class="form-options">
+      <label class="remember">
+        <input type="checkbox"> ログイン状態を保持する
+      </label>
+      <span class="forgot-link">パスワードを忘れた方</span>
+    </div>
+
+    <button class="btn-login">ログイン →</button>
+
+    <div class="divider">または</div>
+
+    <button class="btn-sso">
+      <span class="sso-icon"></span>
+      SSO でログイン
+    </button>
+
+    <div class="signup-link">
+      アカウントをお持ちでない方は <a href="#">新規登録</a>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
